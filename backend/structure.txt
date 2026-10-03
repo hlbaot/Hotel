@@ -1,0 +1,77 @@
+src/main/java/com/example/rental/
+│
+├── RentalApplication.java
+│
+├── enums/
+│   ├── Role.java                ADMIN, CUSTOMER
+│   ├── RoomStatus.java          AVAILABLE, OCCUPIED, MAINTENANCE
+│   ├── ContractStatus.java      ACTIVE, ENDED
+│   ├── InvoiceStatus.java       UNPAID, PAID
+│   └── RequestStatus.java       PENDING, APPROVED, REJECTED (*)
+│
+├── entity/
+│   ├── User.java                tài khoản + thông tin khách: username, password, họ tên, SĐT, CCCD, role
+│   ├── Room.java                số phòng, giá, diện tích, mô tả, trạng thái
+│   ├── Contract.java            phòng, khách (User), ngày bắt đầu/kết thúc, tiền cọc, trạng thái
+│   ├── Invoice.java             hợp đồng, tháng/năm, số điện, số nước, tổng tiền, trạng thái
+│   └── RentalRequest.java       khách, phòng, lời nhắn, trạng thái (*)
+│
+├── repository/
+│   ├── UserRepository.java          tìm theo username, kiểm tra trùng username
+│   ├── RoomRepository.java          lọc theo trạng thái, khoảng giá
+│   ├── ContractRepository.java      tìm hợp đồng theo khách, theo phòng + trạng thái
+│   ├── InvoiceRepository.java       theo hợp đồng, theo khách, kiểm tra trùng tháng; query thống kê
+│   └── RentalRequestRepository.java (*)
+│
+├── dto/
+│   ├── auth/        LoginRequest, RegisterRequest, AuthResponse (chứa token)
+│   ├── user/        UserResponse, UpdateProfileRequest, ChangePasswordRequest
+│   ├── room/        RoomRequest, RoomResponse
+│   ├── contract/    ContractRequest, ContractResponse
+│   ├── invoice/     InvoiceRequest, InvoiceResponse
+│   ├── request/     RentalRequestCreate, RentalRequestResponse (*)
+│   └── stats/       RevenueStatResponse, RoomStatResponse
+│
+├── service/
+│   ├── AuthService.java         đăng ký, đăng nhập, sinh token
+│   ├── UserService.java         quản lý khách, cập nhật hồ sơ, đổi mật khẩu
+│   ├── RoomService.java         CRUD phòng, quy tắc không xóa phòng đang thuê
+│   ├── ContractService.java     tạo/kết thúc hợp đồng, đổi trạng thái phòng (@Transactional)
+│   ├── InvoiceService.java      lập hóa đơn, tính tiền, xác nhận thanh toán
+│   ├── RentalRequestService.java duyệt/từ chối yêu cầu (*)
+│   └── StatisticService.java    doanh thu, số phòng theo trạng thái
+│
+├── controller/
+│   ├── AuthController.java          /api/auth/**           (ai cũng gọi được)
+│   ├── RoomController.java          /api/rooms/**          (xem: mọi người; sửa: ADMIN)
+│   ├── UserController.java          /api/users/**, /api/me (ADMIN quản lý; khách xem hồ sơ mình)
+│   ├── ContractController.java      /api/contracts/**, /api/contracts/my
+│   ├── InvoiceController.java       /api/invoices/**, /api/invoices/my
+│   ├── RentalRequestController.java /api/rental-requests/** (*)
+│   └── StatisticController.java     /api/admin/statistics/**  (ADMIN)
+│
+├── exception/
+│   ├── ResourceNotFoundException.java    404 chung cho phòng, hợp đồng, hóa đơn...
+│   ├── RoomNotAvailableException.java    409 phòng đã có người thuê
+│   ├── DuplicateResourceException.java   409 trùng username, trùng hóa đơn tháng
+│   ├── BusinessException.java            400 vi phạm quy tắc nghiệp vụ khác
+│   └── GlobalExceptionHandler.java       bắt tất cả lỗi, trả JSON thống nhất
+│
+├── security/
+│   ├── SecurityConfig.java           phân quyền theo URL và role
+│   ├── JwtUtil.java                  tạo và kiểm tra token
+│   ├── JwtAuthenticationFilter.java  đọc token từ header mỗi request
+│   ├── CustomUserDetailsService.java nạp User từ DB cho Spring Security
+│   └── CustomUserDetails.java        bọc User thành đối tượng Spring Security hiểu
+│
+├── config/
+│   ├── CorsConfig.java               cho phép FE gọi API
+│   ├── PasswordEncoderConfig.java    bean BCrypt để mã hóa mật khẩu
+│   ├── RentalProperties.java         đọc giá điện, giá nước từ application.yml
+│   └── DataInitializer.java          tạo sẵn 1 tài khoản admin khi chạy lần đầu
+│
+└── client/                           để trống lúc đầu
+    └── (sau này: EmailClient, ZaloClient để nhắc đóng tiền)
+
+src/main/resources/
+└── application.yml                   DB, JWT secret, giá điện, giá nước
